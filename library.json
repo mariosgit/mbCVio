@@ -1,0 +1,27 @@
+{
+    "name": "mbCVio",
+    "version": "1.0.0",
+    "keywords": [
+        "CV"
+    ],
+    "description": "Driver for CV IO board.",
+    "frameworks": [
+        "arduino"
+    ],
+    "authors": [
+        {
+            "email": "mariosge@gmail.com",
+            "url": null,
+            "maintainer": true,
+            "name": "mario"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mariosgit/mbCVio"
+    },
+    "homepage": "https://github.com/mariosgit/mbCVio",
+    "dependencies" : [
+        "4076"
+    ]
+}
