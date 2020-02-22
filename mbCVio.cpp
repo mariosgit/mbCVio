@@ -1,18 +1,22 @@
-/*
-
-*/
-
 #include "mbCVio.h"
-
-#include <ArduinoLog.h>
+#include <mbLog.h>
 
 mbCVio::mbCVio() :
     mcp(),
     dac0(0),
     dac1(1),
-    adcadr(0b01101001)
+    adcadr(0b01101001),
+    _dacOffset(4000)
 {
+}
 
+void mbCVio::setDACOffset(float val)
+{
+    float fval = fmax(5.0f, val);
+    fval = fmin(-5.0f, fval);
+
+    _dacOffset = fval; // 2000 = 0V, 0 = -5V, 4000 = +5V
+    dac1.analogWrite(1, _dacOffset); // 0=ADCVref=1,024; 1=DACVref=2,048V
 }
 
 bool mbCVio::begin()
@@ -47,7 +51,7 @@ bool mbCVio::begin()
     dac0.setGain(1, 1, 1, 1);
     dac1.setGain(1, 1, 1, 1);
     dac0.analogWrite(2000,2000,2000,2000);
-    dac1.analogWrite(1000,2000,2000,2000); // 0=ADCVref=1,024; 1=DACVref=2,048V
+    dac1.analogWrite(0000,_dacOffset,2000,2000); // 0=ADCVref=1,024; 1=DACVref=2,048V
 
     // ADC
     Wire.beginTransmission(adcadr);
@@ -100,23 +104,27 @@ void mbCVio::adc()
         data[1] = Wire.read();
 
         // Convert the data to 12-bits
-        int raw_adc = (data[0] & 0x0F) * 256 + data[1];
+        int16_t raw_adc = (data[0] & 0x0F) * 256 + data[1];
         if(raw_adc > 2047)
         {
             raw_adc -= 4096;
         }
 
-        // Output data to serial monitor
+        if(channel)
+            _adc0 = raw_adc;
+        else
+            _adc1 = raw_adc;
+
         // if(channel)
-        //     Serial.print("ADC0: ");
+        //     LOG << "ADC0: ";
         // else
-        //     Serial.print("\t\tADC1: ");
-        // Serial.println(raw_adc);
+        //     LOG << "\t\tADC1: ";
+        // LOG << raw_adc <<"\n";
     }
     else
     {
-        Serial.println("Digital Value of Analog Input is : FAIL");
-        active = false;
+        // LOG << "Digital Value of Analog Input is : FAIL\n";
+        // active = false;
     }
     channel = !channel;
 }
@@ -147,7 +155,7 @@ void mbCVio::loop()
 {
     float val = sin(phase) * 2000.0 + 2000.0;
     // Log.notice("\t\t\t\tdac: %d\n", (uint16_t)val);
-    phase = phase + 0.02;
+    phase = phase + twopi * 0.01;
     if (phase >= twopi)
     {
         phase = 0;
@@ -161,4 +169,3 @@ void mbCVio::loop()
     dac1.analogWrite(2, (uint16_t)val);
     dac1.analogWrite(3, (uint16_t)val);
 }
-
