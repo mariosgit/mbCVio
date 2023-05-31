@@ -2,11 +2,13 @@
 #include <mbLog.h>
 
 mbCVio::mbCVio() :
+    _adc0(0),
+    _adc1(0),
+    _dacOffset(4000),
     mcp(),
     dac0(0),
     dac1(1),
-    adcadr(0b01101001),
-    _dacOffset(4000)
+    adcadr(0b01101001)
 {
 }
 
